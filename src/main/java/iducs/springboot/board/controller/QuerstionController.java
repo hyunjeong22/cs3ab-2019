@@ -25,6 +25,7 @@ import iducs.springboot.board.exception.ResourceNotFoundException;
 import iducs.springboot.board.repository.UserRepository;
 import iducs.springboot.board.service.QuestionService;
 import iducs.springboot.board.service.UserService;
+import iducs.springboot.board.utill.HttpSessionUtils;
 
 @Controller
 @RequestMapping("/questions")
@@ -64,10 +65,15 @@ public class QuerstionController {
 		model.addAttribute("question", question);
 		return "/questions/info";
 	}
-	@PutMapping("/{id}")
-	public String updateQuestionById(@PathVariable(value = "id") Long id, String title, String contents, Model model) {
+	@PutMapping("/{id}")	// 게시물 편집
+	public String updateQuestionById(@PathVariable(value = "id") Long id, @Valid Question formQuestion, String title, String contents, Model model) {
 		Question question = questionService.getQuestionById(id);
-		questionService.updateQuestion(question);		
+		question.setTitle(formQuestion.getTitle());
+		question.setContents(formQuestion.getContents());
+		
+		questionService.updateQuestion(question);
+		model.addAttribute("question", question);
+		
 		return "redirect:/questions/" + id;
 	}
 	@DeleteMapping("/{id}")
@@ -75,6 +81,17 @@ public class QuerstionController {
 		Question question = questionService.getQuestionById(id);
 		questionService.deleteQuestion(question);
 		model.addAttribute("userId", question.getWriter().getUserId());
-		return "/questions/withdrawal";
+		return "redirect:/questions";
+	}
+	@GetMapping("/{id}/edit")	// 게시물 편집
+	public String editQuestion(@PathVariable(value = "id") Long id, Model model, HttpSession session) {
+		User writer = (User) session.getAttribute("user");
+		if(HttpSessionUtils.isLogined(writer))
+				return "redirect:/users/login-form";
+		model.addAttribute("writer", writer);
+		Question question = questionService.getQuestionById(id);
+		model.addAttribute("question", question);
+		
+		return "/questions/edit";
 	}
 }
