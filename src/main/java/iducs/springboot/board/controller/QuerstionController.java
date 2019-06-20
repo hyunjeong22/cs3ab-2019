@@ -53,6 +53,7 @@ public class QuerstionController {
 	public String getQuestionById(@PathVariable(value = "id") Long id, Model model, HttpSession session) {
 		User sessionUser = (User)session.getAttribute("user");
 		Question question = questionService.getQuestionById(id);
+		model.addAttribute("size", question.getAnswers().size());	// 댓글 개수
 		User writer = question.getWriter();
 		if(sessionUser.equals(writer))
 			model.addAttribute("same", "같다");
